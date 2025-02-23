@@ -1,5 +1,9 @@
 #include "Drvr.h"
 
+// storage routine for the driver
+// if you implement multiple volumes per driver, you will need to translate the values
+// provided by mac os appropriately to your device(s) (ie. partitions -> add offsets)
+
 OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
     
     OSErr ret = noErr;
@@ -12,7 +16,8 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
 
     GlobalPtr globs = *globsHdl;
 
-    // as we cast to Uint32, and do no signed math beforehand so we are 4GB safe under 7.5
+    // cast to Uint32, and do no signed math beforehand with these values
+    // this will make us 4GB safe under 7.5+
     uint32_t byteOffsetAbs = 0;
     uint32_t byteCount = pb->ioReqCount; // always a multiple of 512
 
@@ -44,15 +49,15 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
         // write byteCount from buffAddr to byteOffsetAbs on media 
     }
 
-    // EDisk, Newage, SonyRWT update these always, even if an error has occured. SonyIOP does not
+    // SuperMario dump: EDisk, Newage, SonyRWT update these fields always even if an error has occured. SonyIOP does not
     if (bytesActual) { // update fields and return partial data if anything was done
         pb->ioActCount = bytesActual; // actual data read
         dce->dCtlPosition = byteOffsetAbs + pb->ioActCount; // current r/w position
         pb->ioPosOffset = dce->dCtlPosition; 
     } 
 
-    if (bytesActual != byteCount)
-        ret = ioErr; // something went wrong; return an error; how it is handled is not quite defined
+    if (bytesActual != byteCount) // something went wrong; return an error.
+        ret = ioErr; // how it is handled by MacOS is not defined but do not return partial read/write data without an error code
 
     RETURN_FROM_DRIVER;
 }

@@ -11,7 +11,7 @@
 /// CONSTS
 ////////////////////////////////////////////////////
 
-#define diskInsertEvt     7 /* aka diskEvt, see sysequ */
+#define diskInsertEvt diskEvt /* older more verbose name */
 
 ////////////////////////////////////////////////////
 /// STRUCTS
@@ -19,13 +19,11 @@
 
 /// Global struct, allocated by driver
 struct Global {
-    Ptr devBase32;            // devbase (constructed) 32 bit/24 bit
-    uint8_t slot;
-    int16_t drvrRefNum;         // driver RefNum for this instance
-
-    DrvSts2 drvsts;
-    uint32_t sizeLBA;
-    short myDrvNum; // volume num
+    Ptr devBase32;        // devbase (constructed) 32 bit/24 bit
+    int16_t drvrRefNum;   // driver RefNum for this instance
+    short myDrvNum;       // volume num
+    uint32_t sizeLBA;     // size in 512 byte sectors
+    DrvSts2 drvsts;       // drive info struct used by status routine
 };
 
 typedef struct Global Global;
@@ -57,7 +55,7 @@ OSErr DrvrCtl(CntrlParamPtr pb, AuxDCEPtr dce);
 
 //// OpenClose 
 #pragma parameter __D0 DrvrOpen(__A0, __A1)
-OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) ;
+OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce);
 
 #pragma parameter __D0 DrvrClose(__A0, __A1)
 OSErr DrvrClose(IOParamPtr pb, AuxDCEPtr dce);

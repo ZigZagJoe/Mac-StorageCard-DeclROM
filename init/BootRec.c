@@ -14,6 +14,9 @@ If PRAM is not set
     it is responsible for loading the device driver
 */
 
+// Don't call any functions defined in the Drvr files! They aren't going to be in the SBlock copied to RAM by slot manager.
+// All functions shared must be either inline or defined in an object linked after the .text.InitBlocks section
+
 UInt32 BootRec(SEBlock* seblock) {
     seblock->seStatus = 1; // code was executed
     //seblock->seBootState  0 = early boot, 1 = secondaryInit
@@ -30,11 +33,12 @@ UInt32 BootRec(SEBlock* seblock) {
     pb.ioNamePtr = (StringPtr)&driverNamePascal;
     pb.ioSFlags = 0;
     pb.ioSPermssn = 0;
-    pb.ioSMix = nil; /* reserved for use by driver, we can pass vars here */
+    pb.ioSMix = nil; // reserved for use by driver, can pass vars here to the driver
 
     ret = PBHOpen((HParamBlockRec*)&pb, false /* not async */);
 
-    if (ret == noErr) { // return refnum of driver
+     // return refnum of driver on success
+    if (ret == noErr) {
         // loop through drives, looking for drives handled by our driver. post events on them if so
         DrvQElPtr dq;
         for(dq = (DrvQElPtr)(GetDrvQHdr())->qHead; dq; dq = (DrvQElPtr)dq->qLink) {

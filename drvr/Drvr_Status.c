@@ -1,5 +1,6 @@
 #include "Drvr.h"
 
+// status routine for the driver
 OSErr DrvrStatus(CntrlParamPtr pb, AuxDCEPtr dce) {
     OSErr ret;
 
@@ -10,7 +11,8 @@ OSErr DrvrStatus(CntrlParamPtr pb, AuxDCEPtr dce) {
   
     switch (pb->csCode) {
         case drvStat_DrvSts: 
-            // only copy size of original DrvSts struct (22) as that is the size of csparam. crash otherwise.
+            // Copy size of original DrvSts struct (22) as that is the size of csparam. crash otherwise.
+            // struct DrvSts2 is a superset of DrvSts. 
             BlockMove(&(globs->drvsts), &pb->csParam, sizeof(DrvSts));
             breakReturn(noErr);  
         default: // always return statusErr for unknown 

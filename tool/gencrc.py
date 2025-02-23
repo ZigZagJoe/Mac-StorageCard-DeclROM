@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Written by rhalkyard, unmodified
+# https://github.com/rhalkyard/SEthernet/tree/main/rom/se30
 
 import argparse
 import itertools

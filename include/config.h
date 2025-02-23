@@ -8,14 +8,13 @@
 // BOARD CONSTS
 //////////////////////////////////////////////
 
-/* DECLROM CONFIG */
 // board ID, from srsrc type
 #define drHwCARD        0xCADD 
 #define drHwboardID   0xABBC
 
 // board sResource (<128) 
 #define sRsrc_Board     1            
-#define sRsrc_CardDisk    0xDD
+#define sRsrc_CardDisk  0xDD
 
 // not defined anywhere how types need to work, doesn't seem to matter what it is
 #define typeCustomDisk  0xDDDD
