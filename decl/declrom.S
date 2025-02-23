@@ -10,7 +10,6 @@
 _sRsrcDir:
     OSLstEntry    sRsrc_Board, _sRsrc_Board    // board sRsrc
     OSLstEntry    sRsrc_CardDisk, _sRsrc_CardDisk    // video sRsrc
-    
     DatLstEntry    endOfList,    0
 
 //######################################################
@@ -20,14 +19,13 @@ _sRsrcDir:
 .global _sRsrc_CardDisk
 
 _sRsrc_Board:    
-    OSLstEntry  sRsrcType, _BoardType        // offset to board descriptor 
-    OSLstEntry  sRsrcName, _BoardName        // offset to name of board 
+    OSLstEntry  sRsrcType, _BoardType       // offset to board descriptor 
+    OSLstEntry  sRsrcName, _BoardName       // offset to name of board 
     OSLstEntry  sRsrcIcon, _BoardIcon       // offset to icon 
-    DatLstEntry boardId, drHwboardID      // board ID (assigned by DTS)
+    DatLstEntry boardId, drHwboardID        // board ID (assigned by DTS)
     OSLstEntry  pRAMInitData, _BoardDefPRAM
     .long OSLstEntry_primaryInit            // _sblockPriInit
     OSLstEntry  vendorInfo, _VendorInfo     // offset to vendor info 
-//    .long OSLstEntry_secondaryInit            // _sblockSecInit
     EndLstEntry
 
 _BoardType:    
@@ -40,7 +38,7 @@ _BoardName:
     .asciz "CARD V1.0" 
     .align 2
 
-/* slot PRPAM init when card is newly inserted / boardid mismatch with slot pram content */
+// slot PRPAM init when card is newly inserted / boardid mismatch with slot pram content */
 _BoardDefPRAM:
     .long 12    // block size
     .word 0     // reserved for board ID
@@ -71,7 +69,7 @@ _VendorInfo:
     OSLstEntry date,_Date              
     EndLstEntry
     
-_VendorId:         .asciz  "Vendor string"             // vendor ID 
+_VendorId:         .asciz  "Vendor string"// vendor ID 
 _PartNum:
     .asciz "Card V1.0" 
 
@@ -82,11 +80,11 @@ _Date: .asciz "Date string"
 _sRsrc_CardDisk:    
     OSLstEntry  sRsrcType,_CardType       // type 
     OSLstEntry  sRsrcName,_CardName       // driver name string
-    OSLstEntry  sRsrcDrvrDir,_DrvrDir   // driver directory
-    .long OSLstEntry_bootRec            // required in conjunction with flags to be bootable
-    DatLstEntry sRsrcFlags, 2           // 2 = openatboot
-    DatLstEntry sRsrcHWDevId, 1         // 
-    EndLstEntry                         //  end of list
+    OSLstEntry  sRsrcDrvrDir,_DrvrDir     // driver directory
+    .long OSLstEntry_bootRec              // required in conjunction with flags to be bootable
+    DatLstEntry sRsrcFlags, 2             // 2 = openatboot
+    DatLstEntry sRsrcHWDevId, 1           // 
+    EndLstEntry                           //  end of list
 
 .align 2
 _CardType:    
@@ -101,7 +99,7 @@ _CardName:
 //######################################################
 // Driver directory 
 //######################################################
-.global _DrvrDir                        // for linker
+.global _DrvrDir                         // for linker
 
 _DrvrDir:    
     .long OSLstEntry_sMacOS68020         // _sblockDrvr        
@@ -124,7 +122,7 @@ _DrvrDir:
 _sblockDrvr:
     .long  _DrvrBlock_End-.               // block size     
 
-    #include "drvr/Drvr.s"              // driver body                
+    #include "drvr/Drvr.s"                // driver body                
 
 //######################################################
 // Primary Init sBlock
@@ -133,21 +131,21 @@ _sblockDrvr:
 
 _sblockPriInit:
 
-    .long   _CBlock_End-.                // block size (from linker)
-    .byte    sExec2                        // primary init
+    .long   _CBlock_End-.                 // block size (from linker)
+    .byte    sExec2                       // primary init
     .byte    sCPU68020                    // always 68020, even for newer 
-    .short    0                            // Reserved 
+    .short    0                           // Reserved 
     .long    PrimaryInit-.                // Offset to C entry
 
 //######################################################
 // Bootrec sBlock
 //######################################################
 _sblockBootRec:
-    .long   _CBlock_End-.                // block size, from linker
-    .byte    sExec2                        // primary init 
+    .long   _CBlock_End-.                 // block size, from linker
+    .byte    sExec2                       // primary init 
     .byte    sCPU68020                    // always 68020, even for newer 
-    .short    0                            // Reserved 
-    .long    BootRec-.                // Offset to C entry 
+    .short    0                           // Reserved 
+    .long    BootRec-.                    // Offset to C entry 
 
 // Here shared C functions are inserted by linker followed by _DrvrBlock_End 
 // Then main code for PrimaryInit and SecondaryInit, finally _CBlock_End
@@ -160,8 +158,8 @@ _sblockBootRec:
 DeclROMDir:
     .long RsrcDirOffset                   // offset to srcrddir supplied by linker 
 DeclROMCRC:
-    .long ROMSize                          // supplied by linker script 
-    .long 0                                // crc filled in by script
+    .long ROMSize                         // supplied by linker script 
+    .long 0                               // crc filled in by script
     .byte 1                               // Revision Level 
     .byte appleFormat                     // Apple Format 
     .long testPattern                     // magic TestPattern 

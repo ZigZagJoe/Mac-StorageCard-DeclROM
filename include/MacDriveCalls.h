@@ -2,6 +2,7 @@
 #define __MACDRIVECALLS__
 
 // fmtLstCode         Get Format List status call
+// no need to reply if not a floppy, mac os will construct a default off drive size instead
 #define drvStat_fmtLst 6
 
 // StsCode Drive Status call
@@ -46,7 +47,7 @@
 #define drvCtl_iconIDCC      20 
 
 // iconCC Physical Drive Icon control call (ICN# data). 
-//The return drive icon function returns a pointer to the device icon and the device name string. 
+// The return drive icon function returns a pointer to the device icon and the device name string. 
 #define drvCtl_iconCC         21 
 
 // iconLogCC Disk Media Icon control call (ICN# data). 

@@ -3,13 +3,6 @@
 OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     OSErr ret = noErr;
 
-    // construct 32/24 bit address for registers in format 0xFss00000, safe in both modes 
-    // if your device is addressing is compatible with this anyways! 
-    // otherwise you'll need to SwapMMUMode and use only a 32 bit safe addresses, 
-    // stripaddress what the OS hands you, and all sorts of fun stuff.
-    
-    Ptr a32 = (Ptr) (0xF0000000 | ((UInt32)dce->dCtlSlot << 24) | ((UInt32)dce->dCtlSlot << 20));
-    
     if (dce->dCtlStorage != nil) { // should never happen, double driver open
         return noErr; // ???
     }
@@ -28,9 +21,16 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     GlobalPtr globs = (GlobalPtr)*globsHdl;
 
     globs->drvrRefNum = dce->dCtlRefNum;
-    globs->devBase32 = a32; // use this for IO later.  For some reason, the DCE devbase is empty, so we made our own
+	
+	// For some reason, the DCE devbase is typically empty, so we make our own
+    // constructs a 32/24 bit address for registers in format 0xFss00000, safe in both modes 
+    // if your device is addressing is compatible with this anyways! 
+    // otherwise you'll need to SwapMMUMode and use only a 32 bit safe addresses, 
+    // stripaddress what the OS hands you, and all sorts of fun stuff.
+    Ptr a32 = (Ptr) (0xF0000000 | ((UInt32)dce->dCtlSlot << 24) | ((UInt32)dce->dCtlSlot << 20));
+    globs->devBase32 = a32; // use this for IO later.  
  
-    /* do your hardware setup here */    
+    /* do your hardware setup here, set ret on some sort of failure */    
         
     if (ret != noErr)  { // a major hardwaree issue occurred, exit with error
         DisposeHandle(dce->dCtlStorage);
@@ -76,7 +76,8 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     
     // BootRec will post a diskinsert event against this driver number
     // this will cause Mac OS to try to mount it and also ask to initialize
-    // if it's not valid HFS
+    // if it's not valid HFS. No need to call mountvol, that's short circuiting
+	// how all this business is intended to work and can crash.
 
     return ret;
 }
@@ -102,7 +103,7 @@ void RemoveDrvrVolumes(short refNum) {
 OSErr DrvrClose(IOParamPtr pb, AuxDCEPtr dce) {
     OSErr ret = noErr;
 
-    if (dce->dCtlStorage != nil) { //  NetBoot.c says this shouldn't be called with null storage, but check anyways
+    if (dce->dCtlStorage != nil) { //  NetBoot.c says DrvrClose wouldn't be called with null storage, but check anyways
         GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage;
         GlobalPtr globs = (GlobalPtr)*globsHdl;
 
