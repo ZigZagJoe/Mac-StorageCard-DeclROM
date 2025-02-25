@@ -1,17 +1,25 @@
 #include "Drvr.h"
 
-/* conditions and timing for execution
-sresource must have flags = fOpenAtBoot bit 1 (value 2) set
-XPRAM $78 must be set to 00000SRR where S is slot and RR is resource ID
+/* 
+* For bootrec to run at boot time and be able to boot from *
+    device sResource must have flags = fOpenAtBoot (value 2) set
+    XPRAM $78 must be set to $00000SRR where S is slot # and RR is resource ID
 
-if pram is per above:
+* execution times *
+if pram is set as above:
     bootrec will be called at early boot (just after PrimaryInit) at which point
     it can install the driver and be bootable. (it will still be called at secondaryInit time too)
     Quickdraw is available at this point, as is keyboard/mouse
 
-If PRAM is not set
+If PRAM is not set or is set to other device:
     BootRec will be called after secondary init
-    it is responsible for loading the device driver
+    it is still responsible for loading the device driver
+
+BootRec should call PostEvent(diskInsertEvt, num) on any drives belonging to your driver.
+
+For non-bootable cards, you can not put a BootRec entry if you wish
+    Mac OS will load the driver for you around SecondaryInit time. 
+    Remember to PostEvent on your drives!
 */
 
 // Don't call any functions defined in the Drvr files! They aren't going to be in the SBlock copied to RAM by slot manager.
@@ -19,12 +27,14 @@ If PRAM is not set
 
 UInt32 BootRec(SEBlock* seblock) {
     seblock->seStatus = 1; // code was executed
-    //seblock->seBootState  0 = early boot, 1 = secondaryInit
+    // seblock->seBootState: 0 running at early boot, 1 running at secondaryInit time
  
     OSErr ret;
     SlotDevParam pb;
 
-    char name[] = driverNamePascal; 
+    // IM: Devices 1-19 suggests testing for space in the unit table prior to opening a driver
+    // Given the particular times at which bootrec executes the system is in *dire* straights
+    // if there were no entries left. therefore, there is not a need to check for space in bootrecs.
 
     // directly lifted from Patches/VideoPatch.a #1006-1013
     // See DC&D 3rd Pg 195 (1st ed, Pg 9-7)
@@ -35,23 +45,23 @@ UInt32 BootRec(SEBlock* seblock) {
     pb.ioSPermssn = 0;
     pb.ioSMix = nil; // reserved for use by driver, can pass vars here to the driver
 
+    // Ask the toolbox to open the driver; it will search the card for the driver and open it
     ret = PBHOpenSync((HParamBlockRec*)&pb); // OpenSlot is just an alias for (PB)HOpen
-    
-     // return refnum of driver on success
-    if (ret == noErr) {
-        // loop through drives, looking for drives handled by our driver. post events on them if so
-        DrvQElPtr dq;
-        for(dq = (DrvQElPtr)(GetDrvQHdr())->qHead; dq; dq = (DrvQElPtr)dq->qLink) {
-            if (dq->dQRefNum == pb.ioSRefNum) {
-                // notify mac OS of the new drive and cause it to be mounted
-                // this is done both times BootRec is called as ROM might have ejected the drive if it didn't have a valid System folder
-                PostEvent(diskInsertEvt, dq->dQDrive /* drive # */); // thank you elliotnunn
-            }
-        }
-    
-        return pb.ioSRefNum;
-    } 
 
-    return 0;
+    if (ret != noErr) // failed, return 0
+        return 0;
+
+    // loop through drives, looking for drives handled by our driver. post events on them if so
+    DrvQElPtr dq;
+    for(dq = (DrvQElPtr)(GetDrvQHdr())->qHead; dq; dq = (DrvQElPtr)dq->qLink) {
+        if (dq->dQRefNum == pb.ioSRefNum) {
+            // notify mac OS of the new drive and cause it to be mounted
+            // this is done both times BootRec is called as ROM might have ejected the drive if it didn't have a valid System folder
+            PostEvent(diskInsertEvt, dq->dQDrive /* drive # */); // thank you elliotnunn
+        }
+    }
+    
+    // bootrec should return refnum of driver on success
+    return pb.ioSRefNum;
 }
 

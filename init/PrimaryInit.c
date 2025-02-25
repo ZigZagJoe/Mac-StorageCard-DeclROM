@@ -8,12 +8,12 @@
 UInt32 PrimaryInit(SEBlock* seblock) {
     seblock->seStatus = 1;    // code was executed
 
-    // seblock->seStatus = -1; // error occurred! will not be retried. there is a magic number that can be used to defer
-    // until secondaryInit time (system patches loaded) also.
+    // set seblock->seStatus = -1; for error occurred! will not be retried. there is a magic number that can be used to
+    // defer primaryInit execution until secondaryInit time (system patches loaded) also.
     // Have not tested if a failure status here prevents Bootrec from being called, but I'd think it would
 
     // You can manipulate XPRAM here in order to ensure bootrec is called, if you like!
-    // See Bootrec.c for details
+    // See Bootrec.c for details of what XPRAM must contain.
 
     return 0;
 }

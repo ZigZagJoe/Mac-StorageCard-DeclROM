@@ -76,7 +76,7 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
         asm volatile(".word 0xA04E" : : "d" (num), "a" (queEl));
     }
  
-    // BootRec will post a diskinsert event against this driver number
+    // BootRec will PostEvent diskInsertEvt against this driver number
     // this will cause Mac OS to try to mount it and also ask to initialize
     // if it's not valid HFS. No need to call mountvol, that's short circuiting
 	// how all this business is intended to work and can crash.

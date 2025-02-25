@@ -4,13 +4,13 @@
 //######################################################
 // DeclROM sRSRC directory - lowest address in ROM
 //######################################################
-.global DeclROMDir                             // "entry" point for linker
+.global DeclROMDir  // "entry" point for linker
 .section .text
 
 _sRsrcDir:
-    OSLstEntry    sRsrc_Board, _sRsrc_Board    // board sRsrc
-    OSLstEntry    sRsrc_CardDisk, _sRsrc_CardDisk    // video sRsrc
-    DatLstEntry    endOfList,    0
+    OSLstEntry    sRsrc_Board, _sRsrc_Board       // board sRsrc
+    OSLstEntry    sRsrc_CardDisk, _sRsrc_CardDisk // device sRsrc
+    DatLstEntry   endOfList, 0
 
 //######################################################
 // Board sRSRC
@@ -35,7 +35,7 @@ _BoardType:
     .short 0
     
 _BoardName:     
-    .asciz "CARD V1.0" 
+    .asciz "TestStorageCard V1.0" 
     .align 2
 
 // slot PRPAM init when card is newly inserted / boardid mismatch with slot pram content */
@@ -69,20 +69,19 @@ _VendorInfo:
     OSLstEntry date,_Date              
     EndLstEntry
     
-_VendorId:         .asciz  "Vendor string"// vendor ID 
-_PartNum:
-    .asciz "Card V1.0" 
-
+_VendorId: .asciz "Vendor string" // vendor name 
+_PartNum:  .asciz "Card V1.0" 
 _RevLevel: .asciz "Version string"
-_Date: .asciz "Date string"
+_Date:     .asciz "Date string"
+
 .align 2
 
 _sRsrc_CardDisk:    
     OSLstEntry  sRsrcType,_CardType       // type 
     OSLstEntry  sRsrcName,_CardName       // driver name string
     OSLstEntry  sRsrcDrvrDir,_DrvrDir     // driver directory
-    .long OSLstEntry_bootRec              // required in conjunction with flags to be bootable
-    DatLstEntry sRsrcFlags, 2             // 2 = openatboot
+    .long OSLstEntry_bootRec              // bootrec required to be bootable, requires bit fOpenAtStart to be bootable
+    DatLstEntry sRsrcFlags, 2             // 2 = fOpenAtStart
     DatLstEntry sRsrcHWDevId, 1           // 
     EndLstEntry                           //  end of list
 
