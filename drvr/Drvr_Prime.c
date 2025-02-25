@@ -32,12 +32,27 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
             byteOffsetAbs = (uint32_t)dce->dCtlPosition + (uint32_t)pb->ioPosOffset;
             break;
     }
+
+    if (byteCount % SECTOR_SZ) {  // per Blue Book Vol2 pg 473 (Edisk Prime), much useful information here!
+        // Access is not a full sector size
+        ret = paramErr;
+        goto exitPrime;
+    }
+    
+    uint32_t addressLBA = byteOffsetAbs / SECTOR_SZ;
+    uint16_t sectorCount = byteCount / SECTOR_SZ;  
+    
+    if ((addressLBA + sectorCount - 1 /* zero indexed sector */) > globs->sizeLBA) {
+        // Out of range sector access
+        ret = paramErr;
+        goto exitPrime;
+    }
     
     Ptr buffAddr = pb->ioBuffer;
     uint32_t bytesActual = 0; // put how much data you transferred in here
     
     // do the actual IO here (Synchronous)
-    // You can also do asynch calls, but you'll need a way to re-enter the driver (ie. interrupt) also need to support killIO calls
+    // You can also do asynch calls, but they're more complicated: you'll need a way to re-enter the driver (ie. interrupt) also need to support killIO calls
     if((pb->ioTrap & 0x00ff) == aRdCmd) {
         if(!(pb->ioPosMode & 0x40)) { // bit 6 indicates verify operation, system 6 mostly uses this?
             // read byteCount from byteOffsetAbs on media into buffAddr
@@ -47,6 +62,7 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
         }
     } else if((pb->ioTrap & 0x00ff) == aWrCmd) {
         // write byteCount from buffAddr to byteOffsetAbs on media 
+        // if read only disk, instead return wPrErr!
     }
 
     // SuperMario dump: EDisk, Newage, SonyRWT update these fields always even if an error has occured. SonyIOP does not
@@ -59,6 +75,7 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
     if (bytesActual != byteCount) // something went wrong; return an error.
         ret = ioErr; // how it is handled by MacOS is not defined but do not return partial read/write data without an error code
 
+exitPrime:
     RETURN_FROM_DRIVER;
 }
 

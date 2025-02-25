@@ -50,7 +50,7 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     }
 
     globs->myDrvNum = myDrvNum;
-    globs->sizeLBA = 10000; // size in 512 byte sectors!
+    globs->sizeLBA = 10000; // size in SECTOR_SZ (512) byte sectors!
   
     // make a pointer for ease of writing the below piece
     DrvSts2 *drvSts = &(globs->drvsts);
