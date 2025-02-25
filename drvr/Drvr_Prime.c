@@ -56,13 +56,19 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
     if((pb->ioTrap & 0x00ff) == aRdCmd) {
         if(!(pb->ioPosMode & 0x40)) { // bit 6 indicates verify operation, system 6 mostly uses this?
             // read byteCount from byteOffsetAbs on media into buffAddr
+            bytesActual = byteCount;
+            ret = noErr; // data read successfully!
         } else {
-            // verify byteCount from byteOffsetAbs on media MATCHES buffAddr contents, return dataVerErr if not
-            // uncommon, but sys6 does seem to use this. You can silently return OK, too...
+            // VERIFY byteCount from byteOffsetAbs on media MATCHES buffAddr contents
+            // return dataVerErr if not matching. uncommon, but sys6 does use this mode
+            bytesActual = byteCount;
+            ret = noErr; // we silently return OK without verifying data.
         }
     } else if((pb->ioTrap & 0x00ff) == aWrCmd) {
         // write byteCount from buffAddr to byteOffsetAbs on media 
         // if read only disk, instead return wPrErr!
+        bytesActual = byteCount;
+        ret = noErr; // data written successfully!
     }
 
     // SuperMario dump: EDisk, Newage, SonyRWT update these fields always even if an error has occured. SonyIOP does not

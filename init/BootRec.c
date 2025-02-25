@@ -35,8 +35,8 @@ UInt32 BootRec(SEBlock* seblock) {
     pb.ioSPermssn = 0;
     pb.ioSMix = nil; // reserved for use by driver, can pass vars here to the driver
 
-    ret = PBHOpen((HParamBlockRec*)&pb, false /* not async */);
-
+    ret = PBHOpenSync((HParamBlockRec*)&pb); // OpenSlot is just an alias for (PB)HOpen
+    
      // return refnum of driver on success
     if (ret == noErr) {
         // loop through drives, looking for drives handled by our driver. post events on them if so
