@@ -18,6 +18,8 @@ _sRsrcDir:
 .global _sRsrc_Board
 .global _sRsrc_CardDisk
 
+// all entries MUST be ascending numerical order of values of the first parameter to OSLstEntry
+// failure to do so will cause it to not work at minimum and often crash 
 _sRsrc_Board:    
     OSLstEntry  sRsrcType, _BoardType       // offset to board descriptor 
     OSLstEntry  sRsrcName, _BoardName       // offset to name of board 
@@ -28,6 +30,7 @@ _sRsrc_Board:
     OSLstEntry  vendorInfo, _VendorInfo     // offset to vendor info 
     EndLstEntry
 
+// required values for board resources
 _BoardType:    
     .short catBoard            
     .short typeBoard
@@ -38,7 +41,7 @@ _BoardName:
     .asciz "TestStorageCard V1.0" 
     .align 2
 
-// slot PRPAM init when card is newly inserted / boardid mismatch with slot pram content */
+// slot PRPAM init when card is newly inserted / boardid mismatch with slot pram content 
 _BoardDefPRAM:
     .long 12    // block size
     .word 0     // reserved for board ID
@@ -49,7 +52,8 @@ _BoardDefPRAM:
     .byte 0
     .byte 0
 
-_BoardIcon: // 32x32 1BPP board icon 
+// 32x32 1BPP board icon shows in Monitors for video cards, don't know anywhere else.
+_BoardIcon: 
     .byte  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     .byte  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     .byte  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -70,12 +74,12 @@ _VendorInfo:
     EndLstEntry
     
 _VendorId: .asciz "Vendor string" // vendor name 
-_PartNum:  .asciz "Card V1.0" 
 _RevLevel: .asciz "Version string"
+_PartNum:  .asciz "Card V1.0" 
 _Date:     .asciz "Date string"
 
 .align 2
-
+// device resource. again, all entries must be in ascending order.
 _sRsrc_CardDisk:    
     OSLstEntry  sRsrcType,_CardType       // type 
     OSLstEntry  sRsrcName,_CardName       // driver name string
@@ -83,7 +87,7 @@ _sRsrc_CardDisk:
     .long OSLstEntry_bootRec              // bootrec required to be bootable, requires bit fOpenAtStart to be bootable
     DatLstEntry sRsrcFlags, 2             // 2 = fOpenAtStart
     DatLstEntry sRsrcHWDevId, 1           // 
-    EndLstEntry                           //  end of list
+    EndLstEntry                           // end of list
 
 .align 2
 _CardType:    

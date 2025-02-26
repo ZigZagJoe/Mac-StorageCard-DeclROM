@@ -17,7 +17,8 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
     GlobalPtr globs = *globsHdl;
 
     // cast to Uint32, and do no signed math beforehand with these values
-    // this will make us 4GB safe under 7.5+
+    // this will make safe to present volumes up to 4GB in size under System 7.5+
+    
     uint32_t byteOffsetAbs = 0;
     uint32_t byteCount = pb->ioReqCount; // always a multiple of 512
 

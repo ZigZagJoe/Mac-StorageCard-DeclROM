@@ -5,7 +5,7 @@ OSErr DrvrStatus(CntrlParamPtr pb, AuxDCEPtr dce) {
     OSErr ret;
 
     GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage;
-    if (!dce->dCtlStorage || !(*globsHdl)) { ret = statusErr; RETURN_FROM_DRIVER; } // die HARD, should never happen
+    if (!dce->dCtlStorage || !(*globsHdl)) { ret = nsDrvErr; RETURN_FROM_DRIVER; } // return fatal error, should never happen
 
     GlobalPtr globs = *globsHdl;
   

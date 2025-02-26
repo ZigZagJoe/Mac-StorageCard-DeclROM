@@ -28,17 +28,17 @@ SECTIONS {
     *Drvr_Status.o (*)  
     *declrom.o (.text.InitBlocks)   
     /* shared code between driver and inits can go here */
-    PROVIDE(_DrvrBlock_End = .);   /* init-only code */
+    PROVIDE(_DrvrBlock_End = .);   /* driver ends here, init-only code follows */
     *PrimaryInit.o (*)
     *BootRec.o (*)
     PROVIDE(_CBlock_End = .);
 
     /* perform math to fill out OSLstEntry fields */
-    PROVIDE(OSLstEntry_primaryInit =   ((primaryInit << 24)   | ((_sblockPriInit - _sRsrc_Board - 20) & 0xFFFFFF))); /* hardcoded directory offset 16 */
+    PROVIDE(OSLstEntry_primaryInit =   ((primaryInit << 24)   | ((_sblockPriInit - _sRsrc_Board - 20) & 0xFFFFFF))); /* hardcoded directory offset 20 */
     PROVIDE(OSLstEntry_bootRec =       ((sRsrcBootRec << 24) | ((_sblockBootRec - _sRsrc_CardDisk - 12) & 0xFFFFFF))); /* hardcoded directory offset 12 */
     PROVIDE(OSLstEntry_sMacOS68020 =   ((sMacOS68020 << 24)   | ((_sblockDrvr - _DrvrDir) & 0xFFFFFF)));
 
-    /* declrom structure */
+    /* declrom structure at the end */
     *declrom.o (.declstruct)
     PROVIDE(ROMSize = .);
     PROVIDE(RsrcDirOffset = ((0 - .) + 20 /* size of struct */) & 0xFFFFFF);

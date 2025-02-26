@@ -30,13 +30,13 @@ OSErr DrvrCtl(CntrlParamPtr pb, AuxDCEPtr dce) {
     OSErr ret;
 
     GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage;
-    if (!dce->dCtlStorage || !(*globsHdl)) { ret = controlErr; RETURN_FROM_DRIVER; } // die HARD, should never happen
+    if (!dce->dCtlStorage || !(*globsHdl)) { ret = nsDrvErr; RETURN_FROM_DRIVER; } // return fatal error, should never happen
     GlobalPtr globs = (GlobalPtr)*globsHdl;
     
     switch (pb->csCode) {
         case drvCtl_Format: // prepare media for use, if required
         case drvCtl_Verify: // verify format
-            breakReturn(noErr); // do nothing; HFS will write the sectors it needs to only rather than zero the disk  
+            breakReturn(noErr); // nothing to do here but we need to return OK; HFS will write the sectors it needs to only rather than try to zero the disk  
         case drvCtl_infoCC:                
             *((uint32_t*)&pb->csParam) = 0b011000000001; // Unspecified drive type, internal, SCSI, fixed, primary drive. IM 5 p471, PB 150 Devnote
             breakReturn(noErr);  
@@ -52,8 +52,8 @@ OSErr DrvrCtl(CntrlParamPtr pb, AuxDCEPtr dce) {
             // make ready for shutdown: flush and disable caches, as power could go away after this
             // More writes can still occur so don't actually make irreversible changes though.
             breakReturn(noErr);  
-        case drvCtl_Eject: // happens at shutdown (7.5+) or if not bootable. 
-            // either way drive will be unmounted until an insert event is posted
+        case drvCtl_Eject: // happens at shutdown (7.5+) or if non-bootable volume at startup
+            // drive will be unmounted until an insert event is posted (which bootrec will do, if needed)
             breakReturn(noErr);
         default: //  return controlErr for unimplemented codes
             breakReturn(controlErr);

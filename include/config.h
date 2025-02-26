@@ -11,15 +11,16 @@
 //////////////////////////////////////////////
 
 // board ID, from srsrc type
-#define drHwCARD        0xCADD 
-#define drHwboardID   0xABBC
+// arbitrary
+#define drHwCARD        1234 
+#define drHwboardID     1
 
 // board sResource (<128) 
 #define sRsrc_Board     1            
 #define sRsrc_CardDisk  0xDD
 
-// not defined anywhere how types need to work, doesn't seem to matter what it is
-#define typeCustomDisk  0xDDDD
+// arbitrary custom disk type
+#define typeCustomDisk  0xD
 #define driverNamePascal "\x10.Disk_CARD"
 
 // DC&D III, pg 196

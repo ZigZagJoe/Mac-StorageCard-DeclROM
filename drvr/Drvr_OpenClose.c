@@ -1,5 +1,6 @@
 #include "Drvr.h"
 
+// driver open routine
 OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     OSErr ret = noErr;
 
@@ -20,8 +21,6 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage;
     GlobalPtr globs = (GlobalPtr)*globsHdl;
 
-    globs->drvrRefNum = dce->dCtlRefNum;
-	
 	// For some reason, the DCE devbase is typically empty, so we make our own
     // constructs a 32/24 bit address for registers in format 0xFss00000, safe in both modes 
     // if your device addressing is compatible with this anyways! if it does not decode A20-A23, you will
@@ -33,7 +32,8 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     globs->devBase32 = a32; // use this for IO later.  
  
     /* do your hardware setup here, set ret on some sort of failure */    
-        
+    globs->sizeLBA = 10000; // size of your device, in SECTOR_SZ (512) byte sectors
+       
     if (ret != noErr)  { // a major hardware issue occurred, exit with error
         DisposeHandle(dce->dCtlStorage);
         dce->dCtlStorage = nil;
@@ -50,8 +50,7 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     }
 
     globs->myDrvNum = myDrvNum;
-    globs->sizeLBA = 10000; // size in SECTOR_SZ (512) byte sectors!
-  
+    
     // make a pointer for ease of writing the below piece
     DrvSts2 *drvSts = &(globs->drvsts);
 
@@ -61,7 +60,7 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     drvSts->installed = 1; // drive installed
     drvSts->qType = 1; // 1 for HD20, enables S1
     drvSts->dQDrive = myDrvNum; // drive number 
-    drvSts->dQRefNum = globs->drvrRefNum; // driver reference number 
+    drvSts->dQRefNum = dce->dCtlRefNum; // driver reference number 
     drvSts->dQFSID = 0; // HFS
 
     // drive size in sectors
@@ -75,18 +74,18 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
         register uint32_t queEl asm("a0")  = (uint32_t)&drvSts->qLink;
         asm volatile(".word 0xA04E" : : "d" (num), "a" (queEl));
     }
- 
-    // BootRec will PostEvent diskInsertEvt against this driver number
-    // this will cause Mac OS to try to mount it and also ask to initialize
-    // if it's not valid HFS. No need to call mountvol, that's short circuiting
-	// how all this business is intended to work and can crash.
 
-    // Yay! we're exposing a new volume to Mac OS. Note that Mac OS's understanding of partitions is tied
+    // Yay! we're exposing a new volume to Mac OS. Note that Mac OS partition support is tied
     // to SCSI drives! We're exposing a raw HFS filesystem here like a giant floppy, so there is
     // no partition map. If you want multiple volumes/partitions, you will need to implement 
     // understanding of a partition map inside your driver (and provide a way to create partitions!)
-    // Then, modify your Prime, Control, and Status routines to operate on the volumes you expose seperately.
-    
+    // and also modify your Prime, Control, and Status routines to distinguish the volumes you expose.
+   
+    // BootRec will PostEvent diskInsertEvt against drives associated with this driver. 
+    // this will cause Mac OS to try to mount these drive(s) and also ask to initialize or eject 
+    // if it's not valid HFS. No need to call mountvol, that's short circuiting
+	// how all this is intended to work and may crash the system if invalid HFS is present.
+  
     return ret;
 }
 
@@ -118,7 +117,7 @@ OSErr DrvrClose(IOParamPtr pb, AuxDCEPtr dce) {
         /* do any hardware shutdown needed. flush cache, etc */
 
         // find and remove any volumes associated with this driver
-        RemoveDrvrVolumes(globs->drvrRefNum);     
+        RemoveDrvrVolumes(dce->dCtlRefNum);     
         
         // free storage
         DisposeHandle(dce->dCtlStorage);

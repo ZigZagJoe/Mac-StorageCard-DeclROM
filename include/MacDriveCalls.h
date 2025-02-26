@@ -1,7 +1,7 @@
 #ifndef __MACDRIVECALLS__
 #define __MACDRIVECALLS__
 
-// fmtLstCode         Get Format List status call
+// fmtLstCode Get Format List status call
 // no need to reply if not a floppy, mac os will construct a default off drive size instead
 #define drvStat_fmtLst 6
 
@@ -43,7 +43,7 @@
 // tCacheCC  'track cache' control. floppy only
 #define drvCtl_tCacheCC        9
 
-// iconIDCC 'get icon id' control code. depreciated?
+// iconIDCC 'get icon id' control code. depreciated, have never seen this issued
 #define drvCtl_iconIDCC      20 
 
 // iconCC Physical Drive Icon control call (ICN# data). 

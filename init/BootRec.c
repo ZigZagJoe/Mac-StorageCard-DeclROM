@@ -33,8 +33,8 @@ UInt32 BootRec(SEBlock* seblock) {
     SlotDevParam pb;
 
     // IM: Devices 1-19 suggests testing for space in the unit table prior to opening a driver
-    // Given the particular times at which bootrec executes the system is in *dire* straights
-    // if there were no entries left. therefore, there is not a need to check for space in bootrecs.
+    // Given the particular times at which bootrec executes the system is in *dire* straits
+    // if there were no entries left. there is not a need to check for space in Bootrecs.
 
     // directly lifted from Patches/VideoPatch.a #1006-1013
     // See DC&D 3rd Pg 195 (1st ed, Pg 9-7)
