@@ -21,16 +21,17 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage;
     GlobalPtr globs = (GlobalPtr)*globsHdl;
 
-	// For some reason, the DCE devbase is typically empty, so we make our own
-    // constructs a 32/24 bit address for registers in format 0xFss00000, safe in both modes 
-    // if your device addressing is compatible with this anyways! if it does not decode A20-A23, you will
-    // be limited to a 1MB address space repeating through the 16MB nubus pseduoslot space and will be OK.
-    // otherwise you'll need to SwapMMUMode and use only a 32 bit safe addresses, 
-    // stripaddress what the OS hands you, and all sorts of fun stuff.
+	// Unless f32BitMode is set, the base address will be a 32/24 bit safe address in form 0xFss00000
+    // if your device addressing needs to be compatible with this. if it does not decode A20-A23, you will
+    // have a 1MB address space repeating through the 16MB nubus pseduoslot space and will be OK.
+    // otherwise if you require >1MB you'll need to decode those lines, use SwapMMUMode and use only
+    // 32 bit safe addresses, stripaddress what the OS hands you, and all sorts of fun stuff.
 
-    Ptr a32 = (Ptr) (0xF0000000 | ((UInt32)dce->dCtlSlot << 24) | ((UInt32)dce->dCtlSlot << 20));
-    globs->devBase32 = a32; // use this for IO later.  
- 
+    if (!dce->dCtlDevBase) // if handed a null address, construct 32/24 bit address for registers in format 0xFss00000, safe in both modes.
+        dce->dCtlDevBase = (0xF0000000 | ((UInt32)dce->dCtlSlot << 24) | ((UInt32)dce->dCtlSlot << 20));
+
+    Ptr a32 = globs->devBase32 = (Ptr)dce->dCtlDevBase;
+
     /* do your hardware setup here, set ret on some sort of failure */    
     globs->sizeLBA = 10000; // size of your device, in SECTOR_SZ (512) byte sectors
        

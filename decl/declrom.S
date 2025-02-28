@@ -87,6 +87,8 @@ _sRsrc_CardDisk:
     .long OSLstEntry_bootRec              // bootrec required to be bootable, requires bit fOpenAtStart to be bootable
     DatLstEntry sRsrcFlags, 2             // 2 = fOpenAtStart
     DatLstEntry sRsrcHWDevId, 1           // 
+    OSLstEntry minorBaseOS, _MinorBase    // offset to address space
+	OSLstEntry minorLength, _MinorLength  // length of card address space
     EndLstEntry                           // end of list
 
 .align 2
@@ -97,8 +99,11 @@ _CardType:
     .short        drHwCARD          
 
 _CardName:    
-    .string        "Disk_CARD"       
-    
+    .asciz        "Disk_CARD"      
+
+.align 2
+    _MinorBase:	 	.long	defMinorBase     
+    _MinorLength: 	.long	defMinorLength   
 //######################################################
 // Driver directory 
 //######################################################
