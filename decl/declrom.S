@@ -1,12 +1,15 @@
 #include "decl_defs.inc"
 #include "config.h"
 
-//######################################################
-// DeclROM sRSRC directory - lowest address in ROM
-//######################################################
 .global DeclROMDir  // "entry" point for linker
+.global _sRsrc_Board
+.global _sRsrc_CardDisk
+
 .section .text
 
+//######################################################
+// DeclROM sRSRC directory - @ lowest address in ROM
+//######################################################
 _sRsrcDir:
     OSLstEntry    sRsrc_Board, _sRsrc_Board       // board sRsrc
     OSLstEntry    sRsrc_CardDisk, _sRsrc_CardDisk // device sRsrc
@@ -15,11 +18,9 @@ _sRsrcDir:
 //######################################################
 // Board sRSRC
 //######################################################
-.global _sRsrc_Board
-.global _sRsrc_CardDisk
 
 // all entries MUST be ascending numerical order of values of the first parameter to OSLstEntry
-// failure to do so will cause it to not work at minimum and often crash 
+// failure to do so will cause it to not work at minimum, and typically just crash 
 _sRsrc_Board:    
     OSLstEntry  sRsrcType, _BoardType       // offset to board descriptor 
     OSLstEntry  sRsrcName, _BoardName       // offset to name of board 
@@ -39,7 +40,6 @@ _BoardType:
     
 _BoardName:     
     .asciz "TestStorageCard V1.0" 
-    .align 2
 
 // slot PRPAM init when card is newly inserted / boardid mismatch with slot pram content 
 _BoardDefPRAM:
@@ -73,12 +73,11 @@ _VendorInfo:
     OSLstEntry date,_Date              
     EndLstEntry
     
-_VendorId: .asciz "Vendor string" // vendor name 
+_VendorId: .asciz "Vendor string"
 _RevLevel: .asciz "Version string"
-_PartNum:  .asciz "Card V1.0" 
+_PartNum:  .asciz "Partnum string" 
 _Date:     .asciz "Date string"
 
-.align 2
 // device resource. again, all entries must be in ascending order.
 _sRsrc_CardDisk:    
     OSLstEntry  sRsrcType,_CardType       // type 
@@ -91,19 +90,20 @@ _sRsrc_CardDisk:
 	OSLstEntry minorLength, _MinorLength  // length of card address space
     EndLstEntry                           // end of list
 
-.align 2
 _CardType:    
-    .short        catProto              
-    .short        typeCustomDisk 
-    .short        drSwApple               
-    .short        drHwCARD          
+    .short  catProto              
+    .short  typeCustomDisk 
+    .short  drSwApple               
+    .short  drHwCARD          
 
 _CardName:    
-    .asciz        "Disk_CARD"      
+    .asciz  "Disk_CARD"      
 
-.align 2
-    _MinorBase:	 	.long	defMinorBase     
-    _MinorLength: 	.long	defMinorLength   
+_MinorBase:	 	
+    .long	defMinorBase     
+_MinorLength: 	
+    .long	defMinorLength   
+
 //######################################################
 // Driver directory 
 //######################################################
