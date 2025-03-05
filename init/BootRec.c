@@ -1,25 +1,28 @@
 #include "Drvr.h"
 
 /* 
-* For bootrec to run at boot time and be able to boot from *
+* For bootrec to run at boot time and be bootable *
     device sResource must have flags = fOpenAtBoot (value 2) set
-    XPRAM $78 must be set to $00000SRR where S is slot # and RR is resource ID
+    XPRAM $78 must be set to $00000SRR where S is slot # and RR is sResource ID
 
-* execution times *
 if pram is set as above:
     bootrec will be called at early boot (just after PrimaryInit) at which point
     it can install the driver and be bootable. (it will still be called at secondaryInit time too)
     Quickdraw is available at this point, as is keyboard/mouse
+    The volume exposed to the OS should contain a HFS filesystem with a blessed system folder
+    otherwise the ROM will call the Control call Eject on your volume proceed with default boot order
 
 If PRAM is not set or is set to other device:
     BootRec will be called after secondary init
     it is still responsible for loading the device driver
 
 BootRec should call PostEvent(diskInsertEvt, num) on any drives belonging to your driver.
+    If the card has been ejected due to not being bootable, this will re-register it with the OS
+    User may be prompted to initialize it by finder if there's no HFS
 
-For non-bootable cards, you can not put a BootRec entry if you wish
+For non-bootable cards, you don't need to put a BootRec entry
     Mac OS will load the driver for you around SecondaryInit time. 
-    Remember to PostEvent on your drives!
+    Remember to PostEvent on your drives inside the driver!
 */
 
 // Don't call any functions defined in the Drvr files! They aren't going to be in the SBlock copied to RAM by slot manager.
@@ -45,7 +48,7 @@ UInt32 BootRec(SEBlock* seblock) {
     pb.ioSPermssn = 0;
     pb.ioSMix = nil; // reserved for use by driver, can pass vars here to the driver
     pb.ioSRefNum = 0;
-    
+
     // Ask the toolbox to open the driver; it will search the card for the driver and open it
     ret = PBHOpenSync((HParamBlockRec*)&pb); // OpenSlot is just an alias for (PB)HOpen
 
@@ -57,7 +60,6 @@ UInt32 BootRec(SEBlock* seblock) {
     for(dq = (DrvQElPtr)(GetDrvQHdr())->qHead; dq; dq = (DrvQElPtr)dq->qLink) {
         if (dq->dQRefNum == pb.ioSRefNum) {
             // notify mac OS of the new drive and cause it to be mounted
-            // this is done both times BootRec is called as ROM might have ejected the drive if it didn't have a valid System folder
             PostEvent(diskInsertEvt, dq->dQDrive /* drive # */); // thank you elliotnunn
         }
     }
