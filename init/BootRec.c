@@ -44,7 +44,8 @@ UInt32 BootRec(SEBlock* seblock) {
     pb.ioSFlags = 0;
     pb.ioSPermssn = 0;
     pb.ioSMix = nil; // reserved for use by driver, can pass vars here to the driver
-
+    pb.ioSRefNum = 0;
+    
     // Ask the toolbox to open the driver; it will search the card for the driver and open it
     ret = PBHOpenSync((HParamBlockRec*)&pb); // OpenSlot is just an alias for (PB)HOpen
 
@@ -62,6 +63,7 @@ UInt32 BootRec(SEBlock* seblock) {
     }
     
     // bootrec should return refnum of driver on success
-    return pb.ioSRefNum;
+    pb.ioSRefNum = pb.ioSRefNum;
+    return 0;
 }
 
