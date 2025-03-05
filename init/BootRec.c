@@ -64,8 +64,7 @@ UInt32 BootRec(SEBlock* seblock) {
         }
     }
     
-    // bootrec should return refnum of driver on success
-    pb.ioSRefNum = pb.ioSRefNum;
+    // refnum of driver is already in ioSRefNum, as bootrec expects at seBootState=0 time
     return 0; // good status
 }
 
