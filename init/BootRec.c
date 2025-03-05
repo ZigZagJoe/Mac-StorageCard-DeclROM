@@ -29,11 +29,12 @@ For non-bootable cards, you don't need to put a BootRec entry
 // All functions shared must be either inline or defined in an object linked after the .text.InitBlocks section
 
 UInt32 BootRec(SEBlock* seblock) {
-    seblock->seStatus = 1; // code was executed
     // seblock->seBootState: 0 running at early boot, 1 running at secondaryInit time
- 
+    
     OSErr ret;
     SlotDevParam pb;
+
+    seblock->seStatus = -1; // return bad status by default
 
     // IM: Devices 1-19 suggests testing for space in the unit table prior to opening a driver
     // Given the particular times at which bootrec executes the system is in *dire* straits
@@ -52,8 +53,8 @@ UInt32 BootRec(SEBlock* seblock) {
     // Ask the toolbox to open the driver; it will search the card for the driver and open it
     ret = PBHOpenSync((HParamBlockRec*)&pb); // OpenSlot is just an alias for (PB)HOpen
 
-    if (ret != noErr) // failed, return 0
-        return -1; // no driver loaded
+    if (ret != noErr) // failed
+        return 0;
 
     // loop through drives, looking for drives handled by our driver. post events on them if so
     DrvQElPtr dq;
@@ -64,7 +65,8 @@ UInt32 BootRec(SEBlock* seblock) {
         }
     }
     
-    // refnum of driver is already in ioSRefNum, as bootrec expects at seBootState=0 time
-    return 0; // good status
+    // refnum of driver is already in ioSRefNum, as bootrec expects at seBootState=0 time 
+    seblock->seStatus = 0; // good status, driver was loaded
+    return 0;
 }
 
