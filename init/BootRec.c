@@ -53,7 +53,7 @@ UInt32 BootRec(SEBlock* seblock) {
     ret = PBHOpenSync((HParamBlockRec*)&pb); // OpenSlot is just an alias for (PB)HOpen
 
     if (ret != noErr) // failed, return 0
-        return 0;
+        return -1; // no driver loaded
 
     // loop through drives, looking for drives handled by our driver. post events on them if so
     DrvQElPtr dq;
@@ -66,6 +66,6 @@ UInt32 BootRec(SEBlock* seblock) {
     
     // bootrec should return refnum of driver on success
     pb.ioSRefNum = pb.ioSRefNum;
-    return 0;
+    return 0; // good status
 }
 
