@@ -16,27 +16,14 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
 
     GlobalPtr globs = *globsHdl;
 
-    // cast to Uint32, and do no signed math beforehand with these values
+    // per Technote FL 24; only use dCtlPosition as Device Manager sets it up for us, considering offset, if needed
+    // cast to Uint32, and do no signed math before doing so
     // this will make safe to present volumes up to 4GB in size under System 7.5+
-    
-    uint32_t byteOffsetAbs = 0;
+    uint32_t byteOffsetAbs = dce->dCtlPosition;
     uint32_t byteCount = pb->ioReqCount; // always a multiple of 512
 
-    switch(pb->ioPosMode & 0x000F) { // figure the actual offset according to the mode
-        case fsAtMark:
-            byteOffsetAbs = dce->dCtlPosition;
-            break;
-        case fsFromStart:
-            byteOffsetAbs = pb->ioPosOffset;
-            break;
-        case fsFromMark: 
-            byteOffsetAbs = (uint32_t)dce->dCtlPosition + (uint32_t)pb->ioPosOffset;
-            break;
-    }
-
     if (byteCount % SECTOR_SZ) {  // per Blue Book Vol2 pg 473 (Edisk Prime), much useful information here!
-        // Access is not a full sector size
-        ret = paramErr;
+        ret = paramErr; // Access wasn't a full sector; very much invalid
         goto exitPrime;
     }
     
@@ -44,8 +31,7 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
     uint16_t sectorCount = byteCount / SECTOR_SZ;  
     
     if ((addressLBA + sectorCount - 1 /* zero indexed sector */) > globs->sizeLBA) {
-        // Out of range sector access
-        ret = paramErr;
+        ret = paramErr; // Out of range sector access
         goto exitPrime;
     }
     
