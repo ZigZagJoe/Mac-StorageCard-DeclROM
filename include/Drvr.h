@@ -30,11 +30,17 @@ typedef struct Global **GlobalHdl;
 
 //// Utilities for driver code /////
 
-// convienence function for switches
-#define breakReturn(val)  { ret = val; break; }
+// declare ret and globals, check globals for validity
+#define DRIVER_COMMON_SETUP   OSErr ret = noErr; \
+	    GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage; \
+	    if (!globsHdl || !(*globsHdl)) { ret = nsDrvErr; DRIVER_RETURN; }; \
+        GlobalPtr globs = *globsHdl;
 
-// return from control routines
-#define RETURN_FROM_DRIVER     { if (!(pb->ioTrap & (1<<noQueueBit))) { IODone((DCtlPtr)dce, ret); } return ret; }
+// set function ret value and break switch
+#define breakReturn(val) { ret = val; break; }
+
+// return from driver routines correctly according to mode of call
+#define DRIVER_RETURN { if (!(pb->ioTrap & (1<<noQueueBit))) { IODone((DCtlPtr)dce, ret); } return ret; }
 
 ////////////////////////////////////////////////////
 /// PROTOTYPES

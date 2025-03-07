@@ -2,12 +2,7 @@
 
 // status routine for the driver
 OSErr DrvrStatus(CntrlParamPtr pb, AuxDCEPtr dce) {
-    OSErr ret;
-
-    GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage;
-    if (!dce->dCtlStorage || !(*globsHdl)) { ret = nsDrvErr; RETURN_FROM_DRIVER; } // return fatal error, should never happen
-
-    GlobalPtr globs = *globsHdl;
+    DRIVER_COMMON_SETUP;
   
     switch (pb->csCode) {
         case drvStat_DrvSts: 
@@ -19,5 +14,5 @@ OSErr DrvrStatus(CntrlParamPtr pb, AuxDCEPtr dce) {
             breakReturn(statusErr);
     }
 
-    RETURN_FROM_DRIVER;
+    DRIVER_RETURN;
 }

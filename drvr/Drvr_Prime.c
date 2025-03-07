@@ -6,36 +6,30 @@
 
 OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
     
-    OSErr ret = noErr;
-    GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage;
-
-    if (!dce->dCtlStorage || !(*globsHdl)) { // should never happen
-        ret = nsDrvErr; // return a fatal error (offlineErr is nonfatal and might get retried)
-        RETURN_FROM_DRIVER;
-    }    
-
-    GlobalPtr globs = *globsHdl;
+    DRIVER_COMMON_SETUP;
 
     // per Technote FL 24; only use dCtlPosition as Device Manager sets it up for us, considering offset, if needed
     // cast to Uint32, and do no signed math before doing so
     // this will make safe to present volumes up to 4GB in size under System 7.5+
     uint32_t byteOffsetAbs = dce->dCtlPosition;
     uint32_t byteCount = pb->ioReqCount; // always a multiple of 512
-
-    if (byteCount % SECTOR_SZ) {  // per Blue Book Vol2 pg 473 (Edisk Prime), much useful information here!
-        ret = paramErr; // Access wasn't a full sector; very much invalid
-        goto exitPrime;
-    }
     
     uint32_t addressLBA = byteOffsetAbs / SECTOR_SZ;
     uint16_t sectorCount = byteCount / SECTOR_SZ;  
     
+    Ptr buffAddr = pb->ioBuffer;
+    
+    // perform sanity checks
+    if (byteCount % SECTOR_SZ) {  // per Blue Book Vol2 pg 473 (Edisk Prime), much useful information here!
+        ret = paramErr; // Access wasn't a full sector; very much invalid
+        goto exitPrime;
+    }
+
     if ((addressLBA + sectorCount - 1 /* zero indexed sector */) > globs->sizeLBA) {
         ret = paramErr; // Out of range sector access
         goto exitPrime;
     }
     
-    Ptr buffAddr = pb->ioBuffer;
     uint32_t bytesActual = 0; // put how much data you transferred in here
     
     // do the actual IO here (Synchronous)
@@ -69,6 +63,6 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
         ret = ioErr; // how it is handled by MacOS is not defined but do not return partial read/write data without an error code
 
 exitPrime:
-    RETURN_FROM_DRIVER;
+    DRIVER_RETURN;
 }
 
