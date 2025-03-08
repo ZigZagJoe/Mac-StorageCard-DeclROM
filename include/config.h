@@ -23,6 +23,7 @@
 #define typeCustomDisk  0xD
 #define driverNamePascal "\x10.Disk_CARD"
 
+// used to construct dCtlDevBase
 // DC&D III, pg 196
 #define defMinorBase    0             // beginning 
 #define defMinorLength  0x20000       // 128 KiB 

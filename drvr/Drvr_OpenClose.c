@@ -30,8 +30,6 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     if (!dce->dCtlDevBase) // if handed a null address, construct 32/24 bit address for registers in format 0xFss00000, safe in both modes.
         dce->dCtlDevBase = (0xF0000000 | ((UInt32)dce->dCtlSlot << 24) | ((UInt32)dce->dCtlSlot << 20));
 
-    Ptr a32 = globs->devBase32 = (Ptr)dce->dCtlDevBase;
-
     /* do your hardware setup here, set ret on some sort of failure */    
     globs->sizeLBA = 10000; // size of your device, in SECTOR_SZ (512) byte sectors
        

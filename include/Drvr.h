@@ -18,10 +18,9 @@
 
 /// Global struct, allocated by driver
 struct Global {
-    Ptr devBase32;        // devbase (constructed) 32 bit/24 bit
     short myDrvNum;       // volume num
     uint32_t sizeLBA;     // size in 512 byte sectors
-    DrvSts2 drvsts;       // drive info struct used by status routine
+    DrvSts2 drvsts;       // drive info struct for status; contains drive queue element
 };
 
 typedef struct Global Global;

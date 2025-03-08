@@ -34,7 +34,7 @@ SECTIONS {
     PROVIDE(_CBlock_End = .);
 
     /* perform math to fill out OSLstEntry fields */
-    PROVIDE(OSLstEntry_primaryInit =   ((primaryInit << 24)   | ((_sblockPriInit - _sRsrc_Board - 20) & 0xFFFFFF))); /* hardcoded directory offset 20 */
+    PROVIDE(OSLstEntry_primaryInit =   ((primaryInit << 24)   | ((_sblockPriInit - _sRsrc_Board - 12) & 0xFFFFFF))); /* hardcoded directory offset 12 */
     PROVIDE(OSLstEntry_bootRec =       ((sRsrcBootRec << 24) | ((_sblockBootRec - _sRsrc_CardDisk - 12) & 0xFFFFFF))); /* hardcoded directory offset 12 */
     PROVIDE(OSLstEntry_sMacOS68020 =   ((sMacOS68020 << 24)   | ((_sblockDrvr - _DrvrDir) & 0xFFFFFF)));
 
