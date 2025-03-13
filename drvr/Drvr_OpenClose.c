@@ -128,12 +128,12 @@ OSErr DrvrClose(IOParamPtr pb, AuxDCEPtr dce) {
         GlobalPtr globs = (GlobalPtr)*globsHdl;
 
         /* do any hardware shutdown needed. flush cache, etc */
-
+        DisposeHandle(globs->ramDiskHdl); // deallocate example ramdisk storage
+        globs->ramDiskHdl = nil;
+        
         // find and remove any volumes associated with this driver
         RemoveDrvrVolumes(dce->dCtlRefNum);   
-
-        DisposeHandle(globs->ramDiskHdl);
-        
+ 
         // free storage
         DisposeHandle(dce->dCtlStorage);
         dce->dCtlStorage = nil;

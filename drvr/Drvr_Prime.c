@@ -29,6 +29,11 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
         ret = paramErr; // Out of range sector access
         goto exitPrime;
     }
+
+    if (!globs->ramDiskHdl) { // check if there is media inserted into our drive
+        ret = offLinErr; // drive is offline
+        goto exitPrime;
+    }
     
     uint32_t bytesActual = 0; // put how much data you transferred in here
  
@@ -38,7 +43,7 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
         if(!(pb->ioPosMode & 0x40)) { // bit 6 indicates verify operation, system 6 mostly uses this?
             // read byteCount from byteOffsetAbs on media into buffAddr
             
-            BlockMove(((Ptr)*globs->ramDiskHdl) + byteOffsetAbs, buffAddr, byteCount); // ramdisk example read
+            BlockMove((*globs->ramDiskHdl) + byteOffsetAbs, buffAddr, byteCount); // ramdisk example read
             
             bytesActual = byteCount;
             ret = noErr; // data read successfully!
@@ -51,7 +56,7 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
     } else if((pb->ioTrap & 0x00ff) == aWrCmd) {
         // write byteCount from buffAddr to byteOffsetAbs on media 
 
-        BlockMove(buffAddr, ((Ptr)*globs->ramDiskHdl) + byteOffsetAbs, byteCount); // ramdisk example write
+        BlockMove(buffAddr, (*globs->ramDiskHdl) + byteOffsetAbs, byteCount); // ramdisk example write
         
         bytesActual = byteCount;
         ret = noErr; // data written successfully!
