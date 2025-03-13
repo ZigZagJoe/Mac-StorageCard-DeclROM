@@ -6,6 +6,13 @@
 
 #define SECTOR_SZ 512
 
+// ramdisk example size
+#define DISK_SZ_MB 8
+
+// calculated size in sectors and bytes
+#define DISK_SZ_BYTES (DISK_SZ_MB * 1024 * 1024)
+#define DISK_SZ_SECT (DISK_SZ_MB * SECTOR_SZ * 4)
+
 //////////////////////////////////////////////
 // BOARD CONSTS
 //////////////////////////////////////////////

@@ -21,6 +21,7 @@ struct Global {
     short myDrvNum;       // volume num
     uint32_t sizeLBA;     // size in 512 byte sectors
     DrvSts2 drvsts;       // drive info struct for status; contains drive queue element
+    Handle ramDiskHdl;
 };
 
 typedef struct Global Global;

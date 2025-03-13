@@ -17,6 +17,7 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
         return openErr;
     }
 
+    // lock the handle
     HLock(dce->dCtlStorage);
     GlobalHdl globsHdl = (GlobalHdl)dce->dCtlStorage;
     GlobalPtr globs = (GlobalPtr)*globsHdl;
@@ -30,15 +31,28 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
     if (!dce->dCtlDevBase) // if handed a null address, construct 32/24 bit address for registers in format 0xFss00000, safe in both modes.
         dce->dCtlDevBase = (0xF0000000 | ((UInt32)dce->dCtlSlot << 24) | ((UInt32)dce->dCtlSlot << 20));
 
-    /* do your hardware setup here, set ret on some sort of failure */    
-    globs->sizeLBA = 10000; // size of your device, in SECTOR_SZ (512) byte sectors
-       
-    if (ret != noErr)  { // a major hardware issue occurred, exit with error
+    /* do your setup here, set ret on some sort of failure */    
+    
+    // ensure system heap is large enough for the allocation    
+    ReserveMemSys(DISK_SZ_BYTES);
+
+    // allocate ramdisk storage
+    globs->ramDiskHdl = NewHandleSys(DISK_SZ_BYTES);
+    ret = globs->ramDiskHdl ? noErr : openErr;
+      
+    if (ret != noErr)  { // a major issue occurred, exit with error
         DisposeHandle(dce->dCtlStorage);
         dce->dCtlStorage = nil;
         return openErr;
     }    
  
+    // move the handle into high memory ...
+    MoveHHi(globs->ramDiskHdl);
+    // .. and lock it
+    HLock(globs->ramDiskHdl);
+
+    globs->sizeLBA = DISK_SZ_SECT; // size of your device, in SECTOR_SZ (512) byte sectors
+     
     // find a free drive number
     int myDrvNum = 1;
     DrvQElPtr dq;
@@ -116,7 +130,9 @@ OSErr DrvrClose(IOParamPtr pb, AuxDCEPtr dce) {
         /* do any hardware shutdown needed. flush cache, etc */
 
         // find and remove any volumes associated with this driver
-        RemoveDrvrVolumes(dce->dCtlRefNum);     
+        RemoveDrvrVolumes(dce->dCtlRefNum);   
+
+        DisposeHandle(globs->ramDiskHdl);
         
         // free storage
         DisposeHandle(dce->dCtlStorage);

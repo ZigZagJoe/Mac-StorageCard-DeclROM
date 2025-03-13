@@ -31,12 +31,15 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
     }
     
     uint32_t bytesActual = 0; // put how much data you transferred in here
-    
+ 
     // do the actual IO here (Synchronous)
     // You can also do asynch calls, but they're more complicated: you'll need a way to re-enter the driver (ie. interrupt) also need to support killIO calls
     if((pb->ioTrap & 0x00ff) == aRdCmd) {
         if(!(pb->ioPosMode & 0x40)) { // bit 6 indicates verify operation, system 6 mostly uses this?
             // read byteCount from byteOffsetAbs on media into buffAddr
+            
+            BlockMove(((Ptr)*globs->ramDiskHdl) + byteOffsetAbs, buffAddr, byteCount); // ramdisk example read
+            
             bytesActual = byteCount;
             ret = noErr; // data read successfully!
         } else {
@@ -47,9 +50,12 @@ OSErr DrvrPrime(IOParamPtr pb, AuxDCEPtr dce) {
         }
     } else if((pb->ioTrap & 0x00ff) == aWrCmd) {
         // write byteCount from buffAddr to byteOffsetAbs on media 
-        // if read only disk, instead return wPrErr!
+
+        BlockMove(buffAddr, ((Ptr)*globs->ramDiskHdl) + byteOffsetAbs, byteCount); // ramdisk example write
+        
         bytesActual = byteCount;
         ret = noErr; // data written successfully!
+        // if read only disk, instead return wPrErr!
     }
 
     // SuperMario dump: EDisk, Newage, SonyRWT update these fields always even if an error has occured. SonyIOP does not
