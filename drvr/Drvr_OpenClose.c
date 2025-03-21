@@ -46,8 +46,6 @@ OSErr DrvrOpen(IOParamPtr pb, AuxDCEPtr dce) {
         return openErr;
     }    
  
-    // move the handle into high memory ...
-    MoveHHi(globs->ramDiskHdl);
     // .. and lock it
     HLock(globs->ramDiskHdl);
 
